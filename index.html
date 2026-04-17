@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Registro de Operaciones</title>
+  <style>
+    body { font-family: sans-serif; max-width: 800px; margin: 40px auto; padding: 0 16px; }
+    form { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 24px; }
+    input, select, button { padding: 8px; font-size: 14px; }
+    button[type="submit"] { grid-column: span 3; background: #0070f3; color: white; border: none; cursor: pointer; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    th { background: #f5f5f5; }
+    .eliminar { background: #e00; color: white; border: none; cursor: pointer; padding: 4px 8px; }
+  </style>
+</head>
+<body>
+  <h1>Registro de Operaciones</h1>
+
+  <form id="form">
+    <input type="date" id="fecha" required />
+    <input type="text" id="ticker" placeholder="Ticker (ej. AAPL)" required />
+    <select id="tipo">
+      <option value="Compra">Compra</option>
+      <option value="Venta">Venta</option>
+    </select>
+    <input type="number" id="cantidad" placeholder="Cantidad" min="1" required />
+    <input type="number" id="precio" placeholder="Precio" min="0" step="0.01" required />
+    <input type="number" id="comision" placeholder="Comisión" min="0" step="0.01" required />
+    <button type="submit">Agregar operación</button>
+  </form>
+
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th><th>Fecha</th><th>Ticker</th><th>Tipo</th>
+        <th>Cantidad</th><th>Precio</th><th>Comisión</th><th></th>
+      </tr>
+    </thead>
+    <tbody id="tabla"></tbody>
+  </table>
+
+  <script>
+    let operaciones = [];
+    let nextId = 1;
+
+    const form = document.getElementById("form");
+    const tabla = document.getElementById("tabla");
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const op = {
+        id: nextId++,
+        fecha: document.getElementById("fecha").value,
+        ticker: document.getElementById("ticker").value.toUpperCase(),
+        tipo: document.getElementById("tipo").value,
+        cantidad: Number(document.getElementById("cantidad").value),
+        precio: Number(document.getElementById("precio").value),
+        comision: Number(document.getElementById("comision").value),
+      };
+      operaciones.push(op);
+      form.reset();
+      renderTabla();
+    });
+
+    function eliminar(id) {
+      operaciones = operaciones.filter((op) => op.id !== id);
+      renderTabla();
+    }
+
+    function renderTabla() {
+      tabla.innerHTML = operaciones.map((op) => `
+        <tr>
+          <td>${op.id}</td>
+          <td>${op.fecha}</td>
+          <td>${op.ticker}</td>
+          <td>${op.tipo}</td>
+          <td>${op.cantidad}</td>
+          <td>${op.precio}</td>
+          <td>${op.comision}</td>
+          <td><button class="eliminar" onclick="eliminar(${op.id})">Eliminar</button></td>
+        </tr>
+      `).join("");
+    }
+  </script>
+</body>
+</html>
