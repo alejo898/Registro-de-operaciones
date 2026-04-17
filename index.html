@@ -12,6 +12,8 @@
     th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
     th { background: #f5f5f5; }
     .eliminar { background: #e00; color: white; border: none; cursor: pointer; padding: 4px 8px; }
+    .error { color: #e00; font-size: 13px; grid-column: span 3; margin: 0; }
+    input.invalid { border: 1px solid #e00; }
   </style>
 </head>
 <body>
@@ -28,6 +30,7 @@
     <input type="number" id="precio" placeholder="Precio" min="0" step="0.01" required />
     <input type="number" id="comision" placeholder="Comisión" min="0" step="0.01" required />
     <button type="submit">Agregar operación</button>
+    <p class="error" id="error"></p>
   </form>
 
   <table>
@@ -46,25 +49,57 @@
 
     const form = document.getElementById("form");
     const tabla = document.getElementById("tabla");
+    const errorEl = document.getElementById("error");
+
+    function guardarOperaciones() {
+      localStorage.setItem("operaciones", JSON.stringify({ operaciones, nextId }));
+    }
+
+    function cargarOperaciones() {
+      const data = localStorage.getItem("operaciones");
+      if (!data) return;
+      const parsed = JSON.parse(data);
+      operaciones = parsed.operaciones;
+      nextId = parsed.nextId;
+    }
+
+    function mostrarError(msg) {
+      errorEl.textContent = msg;
+      setTimeout(() => errorEl.textContent = "", 3000);
+    }
+
+    function validar(fields) {
+      if (!fields.fecha) return "La fecha es obligatoria.";
+      if (!fields.ticker.trim()) return "El ticker es obligatorio.";
+      if (fields.cantidad <= 0) return "La cantidad debe ser mayor a 0.";
+      if (fields.precio <= 0) return "El precio debe ser mayor a 0.";
+      if (fields.comision < 0) return "La comisión no puede ser negativa.";
+      return null;
+    }
 
     form.addEventListener("submit", (e) => {
       e.preventDefault();
-      const op = {
-        id: nextId++,
+      const fields = {
         fecha: document.getElementById("fecha").value,
-        ticker: document.getElementById("ticker").value.toUpperCase(),
+        ticker: document.getElementById("ticker").value,
         tipo: document.getElementById("tipo").value,
         cantidad: Number(document.getElementById("cantidad").value),
         precio: Number(document.getElementById("precio").value),
         comision: Number(document.getElementById("comision").value),
       };
-      operaciones.push(op);
+
+      const err = validar(fields);
+      if (err) return mostrarError(err);
+
+      operaciones.push({ id: nextId++, ...fields, ticker: fields.ticker.toUpperCase() });
+      guardarOperaciones();
       form.reset();
       renderTabla();
     });
 
     function eliminar(id) {
       operaciones = operaciones.filter((op) => op.id !== id);
+      guardarOperaciones();
       renderTabla();
     }
 
@@ -82,6 +117,9 @@
         </tr>
       `).join("");
     }
+
+    cargarOperaciones();
+    renderTabla();
   </script>
 </body>
 </html>
