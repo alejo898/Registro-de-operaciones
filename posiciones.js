@@ -20,4 +20,18 @@ function calcularPosiciones(operaciones) {
   return posiciones;
 }
 
-module.exports = { calcularPosiciones };
+function calcularGananciaRealizada(operaciones) {
+  const posiciones = calcularPosiciones(operaciones);
+  let ganancia = 0;
+
+  for (const op of operaciones) {
+    if (op.tipo === "Venta") {
+      const precioPromedio = posiciones[op.ticker]?.precioPromedio ?? 0;
+      ganancia += (op.precio - precioPromedio) * op.cantidad;
+    }
+  }
+
+  return ganancia;
+}
+
+module.exports = { calcularPosiciones, calcularGananciaRealizada };
