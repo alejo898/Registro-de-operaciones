@@ -34,4 +34,16 @@ function calcularGananciaRealizada(operaciones) {
   return ganancia;
 }
 
-module.exports = { calcularPosiciones, calcularGananciaRealizada };
+function calcularGananciaNoRealizada(operaciones, preciosActuales) {
+  const posiciones = calcularPosiciones(operaciones);
+  let ganancia = 0;
+
+  for (const [ticker, pos] of Object.entries(posiciones)) {
+    const precioActual = preciosActuales[ticker] ?? 0;
+    ganancia += (precioActual - pos.precioPromedio) * pos.cantidad;
+  }
+
+  return ganancia;
+}
+
+module.exports = { calcularPosiciones, calcularGananciaRealizada, calcularGananciaNoRealizada };
